@@ -1,0 +1,37 @@
+workflows:
+  watchos-testflight:
+    name: HandballRef watchOS (TestFlight)
+    max_build_duration: 60
+    environment:
+      vars:
+        XCODE_PROJECT: "HandballRef.xcodeproj"
+        XCODE_SCHEME: "HandballRef"
+    scripts:
+      - name: Preflight (required env vars)
+        script: |
+          if [ -z "$DEVELOPMENT_TEAM" ]; then
+            echo "Missing DEVELOPMENT_TEAM env var"; exit 1;
+          fi
+          if [ -z "$BUNDLE_ID_PREFIX" ]; then
+            echo "Missing BUNDLE_ID_PREFIX env var (e.g. de.yourname.handballref)"; exit 1;
+          fi
+      - name: Install XcodeGen
+        script: |
+          brew update
+          brew install xcodegen
+      - name: Generate Xcode project
+        script: |
+          cd "$CM_BUILD_DIR"
+          xcodegen generate --spec project.yml
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa             --project "$CM_BUILD_DIR/$XCODE_PROJECT"             --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        submit_to_testflight: true

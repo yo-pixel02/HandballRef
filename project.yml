@@ -1,0 +1,61 @@
+name: HandballRef
+
+options:
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: 0.1.0
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: 5.0
+    DEVELOPMENT_TEAM: $(DEVELOPMENT_TEAM)
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  HandballRef_Watch_Extension:
+    type: watchkit2-extension
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: WatchExtension
+    info:
+      path: WatchExtension/Info.plist
+    entitlements:
+      path: WatchExtension/HandballRef.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).watchextension
+
+  HandballRef_Watch_App:
+    type: application.watchapp2
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: WatchApp
+    info:
+      path: WatchApp/Info.plist
+    dependencies:
+      - target: HandballRef_Watch_Extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).watchapp
+
+  HandballRef_Watch_Container:
+    type: application.watchapp2-container
+    platform: watchOS
+    deploymentTarget: "10.0"
+    dependencies:
+      - target: HandballRef_Watch_App
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX)
+
+schemes:
+  HandballRef:
+    build:
+      targets:
+        HandballRef_Watch_Container: all
+    run:
+      config: Debug
+    archive:
+      config: Release
